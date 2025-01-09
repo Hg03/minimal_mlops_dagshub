@@ -1,0 +1,12 @@
+[path]
+root="minimal_mlops/src"
+data = "data"
+
+[file]
+raw_data = "raw_data.parquet"
+processed_data = "processed_data.parquet"
+
+[load_params]
+table="taxi prices"
+batch_size=200
+offset=0
