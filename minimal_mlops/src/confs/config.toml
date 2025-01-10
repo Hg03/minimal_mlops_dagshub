@@ -4,9 +4,16 @@ data = "data"
 
 [file]
 raw_data = "raw_data.parquet"
+raw_training_data="raw_training_data.parquet"
+raw_testing_data="raw_testing_data.parquet"
 processed_data = "processed_data.parquet"
 
 [load_params]
 table="taxi prices"
 batch_size=200
 offset=0
+
+[split]
+test_size=0.2
+shuffle=true
+random_state=23

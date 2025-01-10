@@ -9,6 +9,7 @@ dependencies = [
     "pandas>=2.2.3",
     "polars>=1.19.0",
     "python-dotenv>=1.0.1",
+    "scikit-learn>=1.6.0",
     "supabase>=2.11.0",
     "tomli>=2.2.1",
     "tqdm>=4.67.1",
