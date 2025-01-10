@@ -1,6 +1,7 @@
 [path]
 root="minimal_mlops/src"
 data = "data"
+models="models"
 
 [file]
 raw_data = "raw_data.parquet"
@@ -31,3 +32,21 @@ numeric=["Trip_Distance_km", "Passenger_Count", "Base_Fare", "Per_Km_Rate", "Per
 categoric=["Time_of_Day", "Day_of_Week", "Traffic_Conditions", "Weather"]
 ordinal=["Time_of_Day", "Traffic_Conditions"]
 nominal=["Day_of_Week", "Weather"]
+
+[random-forest-regressor]
+name="random_forest_model.pkl"
+[random-forest-regressor.mlflow]
+experiment_name="rfr_experiment"
+[random-forest-regressor.hyperparams]
+n_estimators=[30, 40, 50]
+criterion=["squared_error", "absolute_error"]
+max_depth=[10,15,20]
+
+[support-vector-regressor]
+name="support_vector_model.pkl"
+[support-vector-regressor.mlflow]
+experiment_name="svr_experiment"
+[support-vector-regressor.hyperparams]
+kernel=["linear", "rbf", "sigmoid"]
+gamma=["scale", "auto"]
+C=[1.0]

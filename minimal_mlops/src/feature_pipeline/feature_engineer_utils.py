@@ -82,6 +82,6 @@ def preprocess(config: Dict) -> Dict[str, pl.DataFrame]:
     preprocessed_train.write_parquet(Path(os.path.join(config["path"]["root"], config["path"]["data"], config["file"]["processed_training_data"])))
     preprocessed_test.write_parquet(Path(os.path.join(config["path"]["root"], config["path"]["data"], config["file"]["processed_testing_data"])))
     return {
-        "train": preprocessed_train,
-        "test": preprocessed_test
+        "train": preprocessed_train.drop_nulls(),
+        "test": preprocessed_test.drop_nulls()
     }
