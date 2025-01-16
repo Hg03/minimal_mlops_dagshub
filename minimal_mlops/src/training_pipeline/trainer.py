@@ -8,11 +8,14 @@ class training_engine:
         self.config = config
         self.model_name = "support-vector-regressor"
         self.preprocessed_data = feature_engineer.feature_engine(config=config).preprocessed_data
-        self.train(training_data=self.preprocessed_data["train"], testing_data=self.preprocessed_data["test"])
+        self.training_data = self.preprocessed_data["train"]
+        self.testing_data = self.preprocessed_data["test"]
+        self.preprocessor = self.preprocessed_data["preprocessor"]
+        self.train()
         
-    def train(self, training_data: pl.DataFrame, testing_data: pl.DataFrame):
+    def train(self):
         model, hyperparams = get_model_with_hyperparams(config=self.config, model_name=self.model_name)
-        tune_and_predict(config=self.config, training_data=training_data, testing_data=testing_data, model_name=self.model_name, model=model, hyperparams=hyperparams)
+        tune_and_predict(config=self.config, preprocessor=self.preprocessor, model_name=self.model_name, model=model, hyperparams=hyperparams)
         
 if __name__ == "__main__":
     from minimal_mlops.src.confs.config import load_config

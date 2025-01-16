@@ -3,8 +3,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 import mlflow
 import pickle
+from minimal_mlops.src.feature_pipeline.feature_engineer_utils import load_raw_from_local
 from mlflow.models.signature import infer_signature
 from sklearn.svm import SVR
+from sklearn.pipeline import Pipeline, make_pipeline
 from minimal_mlops.src.evaluate import evaluate
 import polars as pl
 import os
@@ -29,19 +31,20 @@ def get_model_with_hyperparams(config: Dict, model_name: str) -> Tuple[Any, Dict
 
 def tune_and_predict(
     config: Dict,
-    training_data: pl.DataFrame,
-    testing_data: pl.DataFrame,
+    preprocessor: Pipeline,
     model_name: str,
     model: Any,
     hyperparams: Dict
 ) -> None:
 
 
-    # Convert Polars DataFrames to numpy arrays
-    X_train = training_data.drop(config["columns"]["target"]).to_numpy()
-    y_train = training_data[config["columns"]["target"]].to_numpy()
-    X_test = testing_data.drop(config["columns"]["target"]).to_numpy()
-    y_test = testing_data[config["columns"]["target"]].to_numpy()
+    # Get raw data again
+    data = load_raw_from_local(config=config)
+    training_data, testing_data = data["train"], data["test"]
+    X_train = training_data.drop(config["columns"]["target"])
+    y_train = training_data[config["columns"]["target"]]
+    X_test = testing_data.drop(config["columns"]["target"])
+    y_test = testing_data[config["columns"]["target"]]
     
     # Start MLflow run
     mlflow.set_experiment(config[model_name]["mlflow"]["experiment_name"])
@@ -54,12 +57,12 @@ def tune_and_predict(
             scoring='neg_mean_squared_error'
         )
         
-        # Train model on full training set
-        tuner.fit(X_train, y_train)
-        
-        # Make predictions
-        train_predictions = tuner.predict(X_train)
-        test_predictions = tuner.predict(X_test)
+        # Append the preprocessor
+        model = make_pipeline(preprocessor, tuner)
+        # Train model on full training set and make predictions
+        model.fit(X_train, y_train)
+        train_predictions = model.predict(X_train)
+        test_predictions = model.predict(X_test)
         
         # signature
         model_signature = infer_signature(X_train, test_predictions)
@@ -67,7 +70,7 @@ def tune_and_predict(
         # log metrics and hyperparams
         metrics = evaluate(tuner=tuner, y_train=y_train, train_predictions=train_predictions, y_test=y_test, test_predictions=test_predictions)
         mlflow.log_metrics(metrics)
-        mlflow.log_params(tuner.best_params_)
+        mlflow.log_params(model.best_params_)
         # Log the model
         mlflow.sklearn.log_model(sk_model=tuner, artifact_path="model", signature=model_signature)
         pickle.dump(tuner, open(os.path.join(config["path"]["root"], config["path"]["models"], config[model_name]["name"]), "wb"))
