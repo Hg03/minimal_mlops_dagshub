@@ -7,9 +7,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, FunctionTransformer
 from sklearn.compose import make_column_transformer
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 import numpy as np
 from tqdm import tqdm
 
@@ -31,6 +31,8 @@ def load_data_from_supabase(config: Dict, raw_data_path: Path) -> pl.DataFrame:
         progress_bar.update(len(batch))
     progress_bar.close()
     raw_data = pl.DataFrame(json_data)
+    raw_data = raw_data.drop(pl.col(config["columns"]["to_drop"]))
+    raw_data = raw_data.filter(pl.col(config["columns"]["target"]).is_not_null())
     raw_data.write_parquet(raw_data_path)
     return raw_data
 
@@ -69,13 +71,13 @@ def transformation_pipeline(config: Dict):
     ).set_output(transform='polars')
     pipe_II = make_pipeline(encoding_transformer, keep_the_name_same)
     
-    final_pipe = make_pipeline(pipe_I, pipe_II)
+    final_pipe = make_pipeline(pipe_I, pipe_II).set_output(transform='polars')
     return final_pipe
     
 
-def preprocess(config: Dict) -> Dict[str, pl.DataFrame]:
+def preprocess(config: Dict) -> Dict[str, Union[pl.DataFrame, Pipeline]]:
     raw = load_raw_from_local(config=config)
-    raw_train, raw_test = raw["train"], raw["test"]
+    raw_train, raw_test = raw["train"].drop(pl.col(config["columns"]["target"])), raw["test"].drop(pl.col(config["columns"]["target"]))
     preprocessor = transformation_pipeline(config=config)
     preprocessed_train = preprocessor.fit_transform(raw_train)
     preprocessed_test = preprocessor.transform(raw_test)
@@ -83,5 +85,6 @@ def preprocess(config: Dict) -> Dict[str, pl.DataFrame]:
     preprocessed_test.write_parquet(Path(os.path.join(config["path"]["root"], config["path"]["data"], config["file"]["processed_testing_data"])))
     return {
         "train": preprocessed_train.drop_nulls(),
-        "test": preprocessed_test.drop_nulls()
+        "test": preprocessed_test.drop_nulls(),
+        "preprocessor": preprocessor
     }

@@ -26,6 +26,7 @@ numerical_impute="mean"
 categorical_impute="most_frequent"
 
 [columns]
+to_drop="id"
 features=["Trip_Distance_km", "Time_of_Day", "Day_of_Week", "Passenger_Count", "Traffic_Conditions", "Weather", "Base_Fare", "Per_Km_Rate", "Per_Minute_Rate", "Trip_Duration_Minutes"]
 target="Trip_Price"
 numeric=["Trip_Distance_km", "Passenger_Count", "Base_Fare", "Per_Km_Rate", "Per_Minute_Rate", "Trip_Duration_Minutes"]
