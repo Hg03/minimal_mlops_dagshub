@@ -6,7 +6,7 @@ from minimal_mlops.src.training_pipeline.trainer_utils import get_model_with_hyp
 class training_engine:
     def __init__(self, config: Dict):
         self.config = config
-        self.model_name = "support-vector-regressor"
+        self.model_name = "random-forest-regressor"
         self.preprocessed_data = feature_engineer.feature_engine(config=config).preprocessed_data
         self.training_data = self.preprocessed_data["train"]
         self.testing_data = self.preprocessed_data["test"]
