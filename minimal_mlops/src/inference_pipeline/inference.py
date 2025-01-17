@@ -1,15 +1,19 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from pydantic import BaseModel, Field
 import pandas as pd
 import pickle
 import uvicorn
-from typing import List, Dict
+from typing import Dict, Annotated
+from minimal_mlops.src.utils.common import Time_of_Day_Enum, Traffic_Conditions_Enum, Weather_Enum, Day_of_Week_Enum
 from minimal_mlops.src.confs.config import load_config
+from pathlib import Path
+import os
 
 
 class InferenceAPI:
     def __init__(self, config: Dict):
         # Initialize FastAPI app
+        self.config = config
         self.app = FastAPI(
             title="MLflow Model Prediction API",
             description="API for making predictions using an MLflow model",
@@ -24,7 +28,7 @@ class InferenceAPI:
 
     def load_model(self):
         try:
-            model_path = "minimal_mlops/src/models/random_forest_model.pkl"
+            model_path = Path(os.path.join(self.config["path"]["root"], self.config["path"]["models"]["random-forest-regressor"]["name"]))
             with open(model_path, "rb") as model_file:
                 return pickle.load(model_file)
         except Exception as e:
@@ -32,10 +36,36 @@ class InferenceAPI:
 
     def add_routes(self):
         @self.app.post("/predict")
-        async def predict(input_data: List[PredictionInput]):
+        async def predict(
+            Trip_Distance_km: float = Annotated[float, Form(...)],
+            Time_of_Day: Time_of_Day_Enum = Annotated[Time_of_Day_Enum, Form(...)],
+            Day_of_Week: Day_of_Week_Enum = Annotated[Day_of_Week_Enum, Form(...)],
+            Passenger_Count: float = Annotated[float, Form(...)],
+            Traffic_Conditions: Traffic_Conditions_Enum = Annotated[Traffic_Conditions_Enum, Form(...)],
+            Weather: Weather_Enum = Annotated[Weather_Enum, Form(...)],
+            Base_Fare: float = Annotated[float, Form(...)],
+            Per_Km_Rate: float = Annotated[float, Form(...)],
+            Per_Minute_Rate: float = Annotated[float, Form(...)],
+            Trip_Duration_Minutes: float = Annotated[float, Form(...)],
+        ):
             try:
+
+                # Construct DataFrame from form fields
+                input_data = {
+                    "Trip_Distance_km": [Trip_Distance_km],
+                    "Time_of_Day": [Time_of_Day.value],
+                    "Day_of_Week": [Day_of_Week.value],
+                    "Passenger_Count": [Passenger_Count],
+                    "Traffic_Conditions": [Traffic_Conditions.value],
+                    "Weather": [Weather.value],
+                    "Base_Fare": [Base_Fare],
+                    "Per_Km_Rate": [Per_Km_Rate],
+                    "Per_Minute_Rate": [Per_Minute_Rate],
+                    "Trip_Duration_Minutes": [Trip_Duration_Minutes],
+                }
+                
                 # Convert input data to pandas DataFrame
-                df = pd.DataFrame([item.dict() for item in input_data])
+                df = pd.DataFrame(input_data)
 
                 # Make predictions
                 predictions = self.loaded_model.predict(df)
@@ -45,6 +75,8 @@ class InferenceAPI:
 
                 return {
                     "status": "success",
+                    # "input_data": input_data,
+                    # "pred": 100
                     "predictions": predictions_list,
                 }
             except Exception as e:
@@ -80,20 +112,6 @@ class InferenceAPI:
 
     def run(self, host="0.0.0.0", port=8000):
         uvicorn.run(self.app, host=host, port=port)
-
-
-# Define input data model
-class PredictionInput(BaseModel):
-    Trip_Distance_km: float = Field(..., description="Distance of the trip in kilometers")
-    Time_of_Day: str = Field(..., description="Time of the day (e.g., Morning)")
-    Day_of_Week: str = Field(..., description="Day of the week (e.g., Weekday)")
-    Passenger_Count: float = Field(..., description="Number of passengers")
-    Traffic_Conditions: str = Field(..., description="Traffic conditions (e.g., Low)")
-    Weather: str = Field(..., description="Weather conditions (e.g., Clear)")
-    Base_Fare: float = Field(..., description="Base fare for the trip")
-    Per_Km_Rate: float = Field(..., description="Rate per kilometer")
-    Per_Minute_Rate: float = Field(..., description="Rate per minute")
-    Trip_Duration_Minutes: float = Field(..., description="Duration of the trip in minutes")
 
 
 # Example instantiation and usage
