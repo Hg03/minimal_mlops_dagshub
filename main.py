@@ -1,6 +1,6 @@
 from minimal_mlops.src.confs.config import load_config
 from minimal_mlops.src.training_pipeline.trainer import training_engine
-# from minimal_mlops.src.inference_pipeline import inference
+from minimal_mlops.src.inference_pipeline.inference import InferenceAPI
 import argparse
 
 def main(mode: str):
@@ -8,11 +8,12 @@ def main(mode: str):
     if mode == "train":
         inst = training_engine(config=config)
     elif mode == "infer":
-        # inst = inference
-        pass
+        inst = InferenceAPI(config=config)
+        inst.run()
     elif mode == "train_with_infer":
         inst = training_engine(config=config)
-        # inst1 = inference
+        inst1 = InferenceAPI(config=config)
+        inst1.run()
     
         
 if __name__ == "__main__":
