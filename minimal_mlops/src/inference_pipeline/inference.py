@@ -4,6 +4,7 @@ import pandas as pd
 import mlflow
 from typing import List, Dict, Union
 import json
+import os
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -18,8 +19,11 @@ class PredictionInput(BaseModel):
 
 # Load the MLflow model at startup
 try:
-    logged_model = 'runs:/cc6d0fd01d1b4711895746df4fb16a7e/model'
-    loaded_model = mlflow.pyfunc.load_model(logged_model)
+    import pickle
+    # logged_model = 'runs:/8ca2ec3d6fc0413a9a3a193813a1e6ae/model'
+    # loaded_model = mlflow.pyfunc.load_model(logged_model)
+    model_file = open("minimal_mlops/src/models/random_forest_model.pkl", "rb")
+    loaded_model = pickle.load(model_file)
 except Exception as e:
     raise RuntimeError("Failed to initialize model")
 
@@ -56,8 +60,7 @@ async def root():
             "method": "POST",
             "example_input": {
                 "data": [
-                    {"feature1": 1.0, "feature2": 2.0},
-                    {"feature1": 3.0, "feature2": 4.0}
+                    {'Trip_Distance_km': 19.35, 'Time_of_Day': 'Morning', 'Day_of_Week': 'Weekday', 'Passenger_Count': 3.0, 'Traffic_Conditions': 'Low', 'Weather': 'Clear', 'Base_Fare': 3.56, 'Per_Km_Rate': 0.8, 'Per_Minute_Rate': 0.32, 'Trip_Duration_Minutes': 53.82},
                 ]
             }
         }
