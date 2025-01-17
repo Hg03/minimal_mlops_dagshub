@@ -2,6 +2,7 @@
 root="minimal_mlops/src"
 data = "data"
 models="models"
+mlruns="mlruns"
 
 [file]
 raw_data = "raw_data.parquet"
