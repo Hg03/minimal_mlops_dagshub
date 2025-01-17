@@ -9,6 +9,7 @@ from sklearn.svm import SVR
 from sklearn.pipeline import Pipeline, make_pipeline
 from minimal_mlops.src.evaluate import evaluate
 import polars as pl
+from pathlib import Path
 import os
 
 def get_model_with_hyperparams(config: Dict, model_name: str) -> Tuple[Any, Dict]:
@@ -47,6 +48,7 @@ def tune_and_predict(
     y_test = testing_data[config["columns"]["target"]]
     
     # Start MLflow run
+    mlflow.set_tracking_uri(Path(os.path.join(config["path"]["root"], config["path"]["models"], config["path"]["mlruns"])))
     mlflow.set_experiment(config[model_name]["mlflow"]["experiment_name"])
     with mlflow.start_run(run_name=f"{model.__class__.__name__}_training"):
         
@@ -65,12 +67,12 @@ def tune_and_predict(
         test_predictions = model.predict(X_test)
         
         # signature
-        model_signature = infer_signature(X_train, test_predictions)
+        model_signature = infer_signature(model.steps[0][1].transform(X_train), pl.DataFrame(data={"trip_price": test_predictions.tolist()}))
 
         # log metrics and hyperparams
         metrics = evaluate(tuner=tuner, y_train=y_train, train_predictions=train_predictions, y_test=y_test, test_predictions=test_predictions)
         mlflow.log_metrics(metrics)
-        mlflow.log_params(model.best_params_)
+        mlflow.log_params(model.steps[1][1].best_params_)
         # Log the model
-        mlflow.sklearn.log_model(sk_model=tuner, artifact_path="model", signature=model_signature)
-        pickle.dump(tuner, open(os.path.join(config["path"]["root"], config["path"]["models"], config[model_name]["name"]), "wb"))
+        mlflow.sklearn.log_model(sk_model=model, artifact_path="model", signature=model_signature)
+        pickle.dump(model, open(os.path.join(config["path"]["root"], config["path"]["models"], config[model_name]["name"]), "wb"))
