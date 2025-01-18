@@ -28,7 +28,7 @@ class InferenceAPI:
 
     def load_model(self):
         try:
-            model_path = Path(os.path.join(self.config["path"]["root"], self.config["path"]["models"]["random-forest-regressor"]["name"]))
+            model_path = Path(os.path.join(self.config["path"]["root"], self.config["path"]["models"], self.config["random-forest-regressor"]["name"]))
             with open(model_path, "rb") as model_file:
                 return pickle.load(model_file)
         except Exception as e:
