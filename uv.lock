@@ -1695,7 +1695,7 @@ wheels = [
 ]
 
 [[package]]
-name = "minimal-mlops"
+name = "minimal-mlops-dagshub"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException, Form
 from pydantic import BaseModel, Field
 import pandas as pd
 import pickle
+import mlflow
+from mlflow import MlflowClient
 import uvicorn
 from typing import Dict, Annotated
 from minimal_mlops.src.utils.common import Time_of_Day_Enum, Traffic_Conditions_Enum, Weather_Enum, Day_of_Week_Enum
@@ -28,9 +30,13 @@ class InferenceAPI:
 
     def load_model(self):
         try:
-            model_path = Path(os.path.join(self.config["path"]["root"], self.config["path"]["models"], self.config["random-forest-regressor"]["name"]))
-            with open(model_path, "rb") as model_file:
-                return pickle.load(model_file)
+            mlflow.set_tracking_uri("https://dagshub.com/Hg03/minimal_mlops_dagshub.mlflow")
+            client = MlflowClient()
+            model_name = "rfr_v1"
+            model_uri = f"models:/{model_name}/3"
+            loaded_model = mlflow.sklearn.load_model(model_uri)
+            return loaded_model
+
         except Exception as e:
             raise RuntimeError(f"Failed to initialize model: {e}")
 
@@ -75,8 +81,6 @@ class InferenceAPI:
 
                 return {
                     "status": "success",
-                    # "input_data": input_data,
-                    # "pred": 100
                     "predictions": predictions_list,
                 }
             except Exception as e:

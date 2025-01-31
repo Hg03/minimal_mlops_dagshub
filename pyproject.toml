@@ -1,5 +1,5 @@
 [project]
-name = "minimal-mlops"
+name = "minimal-mlops-dagshub"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
