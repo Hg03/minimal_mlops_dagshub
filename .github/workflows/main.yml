@@ -22,6 +22,8 @@ jobs:
           pip install uv
           pip install -e .
       - name: Train model
+        env:
+          API_KEY: ${{ secrets.API_KEYS }}
         run: |
           uv run main.py train
       # - name: Save model artifact
