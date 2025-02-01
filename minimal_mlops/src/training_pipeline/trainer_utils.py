@@ -41,8 +41,8 @@ def tune_and_predict(
 ) -> None:
     
     load_dotenv()
-    os.environ["MLFLOW_TRACKING_USERNAME"] = [os.getenv("DAGSHUB_TRACKING_USERNAME")]
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = [os.getenv("DAGSHUB_TRACKING_PASSWORD")]
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("DAGSHUB_TRACKING_USERNAME")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("DAGSHUB_TRACKING_PASSWORD")
     # Get raw data again
     data = load_raw_from_local(config=config)
     training_data, testing_data = data["train"], data["test"]
