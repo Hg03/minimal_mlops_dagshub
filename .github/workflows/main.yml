@@ -10,8 +10,6 @@ on:
 env:
   supabase_url: ${{ SECRETS.SUPABASE_URL }} 
   supabase_key: ${{ SECRETS.SUPABASE_KEY }}
-  MLFLOW_TRACKING_USERNAME: ${{ SECRETS.MLFLOW_TRACKING_USERNAME }}
-  MLFLOW_TRACKING_PASSWORD: ${{ SECRETS.MLFLOW_TRACKING_PASSWORD }}
 jobs:
   build:
     runs-on: ubuntu-latest
