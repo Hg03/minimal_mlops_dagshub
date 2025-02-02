@@ -31,8 +31,6 @@ jobs:
           pip install -e .
       - name: Train model
         run: |
-          export MLFLOW_TRACKING_USERNAME=$DAGSHUB_TRACKING_USERNAME
-          export MLFLOW_TRACKING_PASSWORD=$DAGSHUB_TRACKING_PASSWORD
           uv run main.py train
   deploy:
     runs-on: ubuntu-latest
