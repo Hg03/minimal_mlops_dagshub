@@ -53,8 +53,8 @@ def tune_and_predict(
     
     # Start MLflow run
     # mlflow.set_tracking_uri(Path(os.path.join(config["path"]["root"], config["path"]["models"], config["path"]["mlruns"])))
-    # dagshub.init(repo_owner='Hg03', repo_name='minimal_mlops_dagshub', mlflow=True)
-    dagshub.init(url="https://dagshub.com/Hg03/minimal_mlops_dagshub", mlflow=True)
+    dagshub.init(repo_owner='Hg03', repo_name='minimal_mlops_dagshub', mlflow=True)
+    # dagshub.init(url="https://dagshub.com/Hg03/minimal_mlops_dagshub", mlflow=True)
     mlflow.set_tracking_uri("https://dagshub.com/Hg03/minimal_mlops_dagshub.mlflow")
     mlflow.set_experiment(config[model_name]["mlflow"]["experiment_name"])
     with mlflow.start_run(run_name=f"{model.__class__.__name__}_training"):
