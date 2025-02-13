@@ -48,4 +48,4 @@ jobs:
           pip install -e .
       - name: Infer model
         run: |
-          uv run main.py infer
+          uv run main.py train_with_infer
